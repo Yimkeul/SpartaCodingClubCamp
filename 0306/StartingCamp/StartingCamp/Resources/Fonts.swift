@@ -11,6 +11,10 @@ enum Fonts {
     case title
     case description
     case date
+    
+    case detailTitle
+    case detailDesctiption
+    case detailDate
     var value: CGFloat {
         switch self {
         case .title:
@@ -19,6 +23,12 @@ enum Fonts {
             return 10
         case .date:
             return 8
+        case .detailTitle:
+            return 24
+        case .detailDesctiption:
+            return 16
+        case .detailDate:
+            return 12
         }
     }
 }

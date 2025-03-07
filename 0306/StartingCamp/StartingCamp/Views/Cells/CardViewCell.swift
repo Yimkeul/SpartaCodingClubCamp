@@ -13,6 +13,8 @@ class CardCell: UICollectionViewCell {
     private var imageHeightConstraint: NSLayoutConstraint!
     private var textStackViewCenterYConstraint: NSLayoutConstraint!
     private var titleStackViewConstraint: NSLayoutConstraint!
+    private var textStackViewTopConstraint: NSLayoutConstraint?
+    private var textStackViewBottomConstraint: NSLayoutConstraint?
 
     private let imageView: UIImageView = {
         let imageView = UIImageView()
@@ -86,7 +88,7 @@ class CardCell: UICollectionViewCell {
 
         titleStackView.addArrangedSubview(titleLabel)
         titleStackView.addArrangedSubview(dateLabel)
-        
+
         textStackView.addArrangedSubview(titleStackView)
         textStackView.addArrangedSubview(descriptionLabel)
 
@@ -96,29 +98,32 @@ class CardCell: UICollectionViewCell {
 
     private func setupConstraints() {
         imageHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 0)
-        textStackViewCenterYConstraint = textStackView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+
+        textStackViewTopConstraint = textStackView.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: Sizes.innerPadding.value)
+        textStackViewBottomConstraint = textStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Sizes.innerPadding.value)
 
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            imageHeightConstraint,
+            imageHeightConstraint!,
 
-            textStackView.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: Sizes.innerPadding.value),
+            textStackViewTopConstraint!,
             textStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Sizes.innerPadding.value),
             textStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Sizes.innerPadding.value),
-            textStackView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -Sizes.innerPadding.value),
-            
-            titleStackView.widthAnchor.constraint(equalTo: textStackView.widthAnchor)
-        ])
+            textStackViewBottomConstraint!,
+
+            titleStackView.widthAnchor.constraint(equalTo: textStackView.widthAnchor),
+
+            textStackView.heightAnchor.constraint(greaterThanOrEqualToConstant: 50)
+            ])
     }
-    
-    func configure(with memo:Memo) {
+
+    func configure(with memo: Memo) {
         titleLabel.text = memo.title
         descriptionLabel.text = memo.desc
         dateLabel.text = memo.date?.formattedDate()
-        imageView.image = UIImage(named: memo.imageName ?? "") ?? UIImage(named: "bgImg")
-        imageHeightConstraint.constant = UIViewController().cardImageSize.height
+        imageView.image = UIImage(named: memo.imageName ?? Images.bgImg.rawValue)
         configureOptions(for: true)
     }
 
@@ -128,20 +133,44 @@ class CardCell: UICollectionViewCell {
         dateLabel.text = ""
         configureOptions(for: false)
     }
-    
-    private func getDate(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd"
-        return formatter.string(from: date)
+
+    private func disableConstraint() {
+        textStackViewCenterYConstraint?.isActive = false
+        textStackViewTopConstraint?.isActive = false
+        textStackViewBottomConstraint?.isActive = false
+        imageHeightConstraint?.isActive = false
     }
-    
+
     private func configureOptions(for type: Bool) {
-        // type ? data : emtpy
         textStackView.alignment = type ? .leading : .center
         titleLabel.textAlignment = type ? .left : .center
         descriptionLabel.textAlignment = type ? .left : .center
         dateLabel.isHidden = !type
         imageView.isHidden = !type
-        textStackViewCenterYConstraint.isActive = !type
+
+        if textStackViewCenterYConstraint == nil {
+            textStackViewCenterYConstraint = textStackView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+        }
+        
+        disableConstraint()
+
+        if type {
+            textStackViewTopConstraint = textStackView.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: Sizes.innerPadding.value)
+            textStackViewBottomConstraint = textStackView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -Sizes.innerPadding.value)
+            imageHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: UIViewController().cardImageSize.height)
+        } else {
+            textStackViewCenterYConstraint?.isActive = true
+            textStackViewTopConstraint = textStackView.topAnchor.constraint(equalTo: contentView.topAnchor)
+            textStackViewBottomConstraint = textStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            imageHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 0)
+        }
+
+        NSLayoutConstraint.activate([
+            textStackViewTopConstraint!,
+            textStackViewBottomConstraint!,
+            imageHeightConstraint!
+            ])
+
     }
+
 }

@@ -40,10 +40,8 @@ class ViewController: UIViewController {
     
     private func fetchMemos() {
         coreDataManager.fetchAllMemos { [weak self] memos in
-            // 데이터를 성공적으로 가져오면 collectionView를 리로드
             self?.items = memos
             self?.collectionView.reloadData()
-            print(self?.items as Any)
         }
     }
 
@@ -53,7 +51,7 @@ class ViewController: UIViewController {
         view.addSubview(collectionView)
 
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Sizes.padding.value),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Sizes.padding.value),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
@@ -69,7 +67,7 @@ class ViewController: UIViewController {
     // 배경이미지
     private func setupViewBackgroundImage() {
         let backgroundImage = UIImageView(frame: UIScreen.main.bounds)
-        backgroundImage.image = UIImage(named: "bgImg")
+        backgroundImage.image = Images.bgImg.image
         backgroundImage.contentMode = .scaleToFill
         view.insertSubview(backgroundImage, at: 0)
     }
@@ -90,7 +88,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
             let memo = items[indexPath.item]
             cell.configure(with: memo)
         } else {
-            cell.configureAsEmptyCard() // 마지막 항목은 추가 버튼 같은 용도로
+            cell.configureAsEmptyCard()
         }
 
         return cell
@@ -113,7 +111,6 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     private func presentAddItemModal() {
         let addItemVC = AddItemViewController()
         addItemVC.inputHandler = { [weak self] title, description, imageName in
-            // 입력받은 title과 description을 처리하는 로직
             self?.addNewItem(title: title, description: description, imageName: imageName)
         }
         let navigationController = UINavigationController(rootViewController: addItemVC)
